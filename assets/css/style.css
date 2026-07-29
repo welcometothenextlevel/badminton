@@ -551,6 +551,14 @@ body.is-locked { overflow: hidden; }
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='square'/%3E%3C/svg%3E") center / 78% no-repeat;
 }
 
+/* Brand panel — the EBC mark against the mountain it's named for.
+   Sits at the foot of the copy column, where the Why Everest blurb used to be. */
+.about__brand { margin: var(--sp-4) 0 0; }
+.about__brand img {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: 2px;
+}
+
 /* "Why Everest" — carries the brand story into the body of the page */
 .why {
   margin-top: var(--sp-4);
@@ -575,7 +583,6 @@ body.is-locked { overflow: hidden; }
   margin-top: 0.85rem; font-size: 0.82rem; color: var(--text-muted);
   padding-left: 0.9rem; border-left: 2px solid var(--accent);
 }
-.about__figure--sub img { aspect-ratio: 16 / 10; object-position: center 35%; }
 
 @media (min-width: 900px) {
   .about__grid {
@@ -584,14 +591,13 @@ body.is-locked { overflow: hidden; }
     align-items: start;
   }
   .about__figure img { aspect-ratio: 3 / 4; }
-  /* Secondary shot is narrower and right-aligned, stepping the column edge.
-     It sits clear of the caption rather than overlapping it. */
-  .about__figure--sub {
-    width: 68%;
+  /* The blurb is narrower and right-aligned, stepping the column edge
+     the way the secondary photo used to. */
+  .why {
+    width: 78%;
     margin-left: auto;
     margin-right: clamp(0px, 2vw, 2.5rem);
   }
-  .about__figure--sub img { aspect-ratio: 4 / 3; }
 }
 
 /* -------------------------------------------------------------
