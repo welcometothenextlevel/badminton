@@ -896,6 +896,19 @@ body.is-locked { overflow: hidden; }
 }
 .footer__base p { margin: 0; color: var(--text-on-dark-muted); opacity: .75; }
 
+/* Build credit — understated, must not compete with the client's own details */
+.footer__credit a {
+  color: var(--text-on-dark-muted);
+  /* underline the text itself — a border would sit on the tap-target box */
+  text-decoration: underline;
+  text-decoration-color: rgba(201, 160, 99, .5);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  display: inline-flex; align-items: center; min-height: 44px;  /* tap target */
+  transition: color .2s var(--ease), text-decoration-color .2s var(--ease);
+}
+.footer__credit a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+
 @media (min-width: 700px) {
   .footer__top { grid-template-columns: 1.4fr 1fr 1fr; }
   .footer__col:last-child { grid-column: 2 / -1; }
@@ -905,6 +918,8 @@ body.is-locked { overflow: hidden; }
   .footer__col:last-child { grid-column: auto; }
   .footer__base { grid-template-columns: 1fr auto; align-items: center; }
   .footer__abn { text-align: right; }
+  /* credit sits on its own row so it stays clearly secondary */
+  .footer__credit { grid-column: 1 / -1; text-align: right; }
 }
 
 /* -------------------------------------------------------------
