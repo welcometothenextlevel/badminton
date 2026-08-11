@@ -226,6 +226,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn--sm { min-height: 44px; padding: 0.55rem 1.15rem; font-size: 0.78rem; }
 .btn--full { width: 100%; }
 
+
+/* Outline button for light sections (pairs with .btn--dark) */
+.btn--outline {
+  background: transparent; color: var(--text);
+  border-color: var(--rule);
+}
+.btn--outline:hover { border-color: var(--text); background: var(--paper-2); }
+
+/* Inline action pair inside a prose column */
+.prose__actions {
+  display: flex; flex-wrap: wrap; gap: 0.75rem;
+  margin: var(--sp-3) 0 var(--sp-5);
+}
+
 /* -------------------------------------------------------------
    5. LOGO LOCKUP
    ------------------------------------------------------------- */
@@ -275,22 +289,77 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .nav { display: none; }
 
-.nav__list { display: flex; align-items: center; gap: clamp(1rem, 0.3rem + 1.5vw, 2rem); }
-.nav__list a {
+.nav__list { display: flex; align-items: center; gap: clamp(0.75rem, 0.2rem + 1.3vw, 1.9rem); }
+/* scoped to top level so the dropdown links don't inherit the underline */
+.nav__list > li > a,
+.nav__list > li > .nav__parent {
   position: relative;
   font-family: "Archivo", sans-serif; font-weight: 600;
   font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase;
   text-decoration: none; display: inline-flex; align-items: center;
   min-height: 44px;              /* tap target */
+  white-space: nowrap;           /* nav must never wrap */
 }
-.nav__list a::after {
+.nav__list > li > a::after {
   content: ""; position: absolute; left: 0; bottom: 0;
   width: 100%; height: 2px; background: var(--accent);
   transform: scaleX(0); transform-origin: left;
   transition: transform .3s var(--ease);
 }
-.nav__list a:hover::after,
-.nav__list a.is-active::after { transform: scaleX(1); }
+.nav__list > li > a:hover::after,
+.nav__list > li > a.is-active::after,
+.nav__list > li > a[aria-current="page"]::after,
+.nav__list > li.is-current > .nav__parent::after { transform: scaleX(1); }
+.nav__list > li > a[aria-current="page"],
+.nav__list > li.is-current > .nav__parent { color: var(--accent); }
+
+/* ---- Programs dropdown ------------------------------------------------- */
+.nav__item--sub { position: relative; display: flex; align-items: center; gap: 0.25rem; }
+
+.nav__toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; min-height: 44px; padding: 0;
+  background: none; border: 0; color: inherit; cursor: pointer;
+}
+.nav__chev { width: 11px; height: 8px; transition: transform .25s var(--ease); }
+.nav__item--sub.is-open .nav__chev { transform: rotate(180deg); }
+
+.nav__sub {
+  position: absolute; top: 100%; left: -1rem; z-index: 10;
+  min-width: 250px; padding: 0.4rem 0;
+  background: rgba(12, 20, 38, .98);
+  border: 1px solid var(--ink-3);
+  border-radius: 2px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
+  opacity: 0; visibility: hidden;
+  pointer-events: none;   /* never intercept clicks while closed */
+  transform: translateY(-6px);
+  /* visibility flips instantly on open and is delayed on close so the fade-out
+     is still seen. Never transition visibility itself — if transitions are
+     paused (background tab, reduced motion) the menu can get stuck hidden. */
+  transition: opacity .2s var(--ease), transform .2s var(--ease), visibility 0s .2s;
+}
+.nav__item--sub:hover .nav__sub,
+.nav__item--sub:focus-within .nav__sub,
+.nav__item--sub.is-open .nav__sub {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0);
+  transition: opacity .2s var(--ease), transform .2s var(--ease), visibility 0s 0s;
+}
+/* bridges the gap between the trigger and the panel so hover doesn't drop out */
+.nav__item--sub::after {
+  content: ""; position: absolute; top: 100%; left: 0; right: 0; height: 12px;
+}
+.nav__sub a {
+  display: flex; align-items: center; min-height: 44px;   /* tap target */
+  padding: 0.35rem 1.15rem;
+  font-family: "Inter", sans-serif; font-weight: 500;
+  font-size: 0.88rem; letter-spacing: 0; text-transform: none;
+  color: var(--text-on-dark-muted); text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color .2s var(--ease), background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.nav__sub a:hover { color: #fff; background: rgba(255,255,255,.05); border-left-color: var(--accent); }
+.nav__sub a[aria-current="page"] { color: var(--accent); border-left-color: var(--accent); }
 
 .nav__phone {
   font-family: "Archivo", sans-serif; font-weight: 700;
@@ -324,7 +393,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .overlay {
   position: fixed; inset: 0; z-index: 90;
   background: var(--ink);
-  display: grid; place-items: center;
+  /* Top-aligned and scrollable. Centring clips the first item once the
+     programs sub-list makes the menu taller than a short viewport. */
+  display: block;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   opacity: 0;
   pointer-events: none;   /* must never intercept clicks while closed */
   transition: opacity .3s var(--ease);
@@ -336,18 +410,38 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .overlay.is-open { opacity: 1; pointer-events: auto; }
 .overlay__nav {
   display: flex; flex-direction: column; align-items: flex-start;
-  gap: var(--sp-3); padding: var(--gutter); width: 100%; max-width: 460px;
+  gap: var(--sp-3);
+  width: 100%; max-width: 460px;
+  margin-inline: auto;
+  padding: calc(var(--header-h) + var(--sp-3)) var(--gutter) var(--sp-5);
 }
-.overlay__nav ul { display: flex; flex-direction: column; gap: 0.25rem; width: 100%; margin-bottom: var(--sp-2); }
-.overlay__nav ul a {
-  display: block; padding: 0.6rem 0;
+.overlay__nav > ul { display: flex; flex-direction: column; gap: 0.25rem; width: 100%; margin-bottom: var(--sp-2); }
+.overlay__nav > ul > li > a {
+  display: block; padding: 0.5rem 0;
   font-family: "Archivo", sans-serif; font-weight: 800;
-  font-size: clamp(2rem, 1.2rem + 3.4vw, 2.9rem);
+  font-size: clamp(1.75rem, 1.1rem + 3vw, 2.6rem);
   letter-spacing: -0.035em; text-transform: uppercase;
   color: #fff; text-decoration: none;
   transition: color .2s var(--ease);
 }
-.overlay__nav ul a:hover { color: var(--accent); }
+.overlay__nav > ul > li > a:hover { color: var(--accent); }
+.overlay__nav > ul > li > a[aria-current="page"] { color: var(--accent); }
+
+/* Indented programs sub-list inside the burger menu — always shown, no hover */
+.overlay__sub {
+  display: flex; flex-direction: column;
+  margin: 0.1rem 0 0.6rem; padding-left: 0.9rem;
+  border-left: 2px solid var(--ink-3);
+}
+.overlay__sub a {
+  display: flex; align-items: center; min-height: 44px;   /* tap target */
+  font-family: "Inter", sans-serif; font-weight: 500;
+  font-size: 1rem; letter-spacing: 0; text-transform: none;
+  color: var(--text-on-dark-muted); text-decoration: none;
+  transition: color .2s var(--ease);
+}
+.overlay__sub a:hover { color: #fff; }
+.overlay__sub a[aria-current="page"] { color: var(--accent); }
 .overlay__phone {
   font-family: "Archivo", sans-serif; font-weight: 700;
   letter-spacing: 0.08em; color: var(--text-on-dark-muted); text-decoration: none;
@@ -509,9 +603,12 @@ body.is-locked { overflow: hidden; }
   font-variant-numeric: tabular-nums;
 }
 .stat__prefix { font-size: 0.5em; letter-spacing: -0.02em; }
+/* The markup carries a real space before this, so it reads "8 layer" when
+   copied or read aloud. No extra left margin, or the gap doubles up. */
 .stat__suffix {
-  font-size: 0.24em; letter-spacing: 0.14em; text-transform: uppercase;
-  margin-left: 0.35em; vertical-align: 0.9em; color: var(--accent-soft);
+  font-size: 0.26em; letter-spacing: 0.12em; text-transform: uppercase;
+  margin-left: 0; vertical-align: 0.72em; color: var(--accent-soft);
+  white-space: nowrap;
 }
 
 /* Figure 4 carries no number, so it reads as a statement instead of a counter */
@@ -783,6 +880,14 @@ body.is-locked { overflow: hidden; }
   background-size: 12px;
   padding-right: 2.75rem;
 }
+
+/* Spam honeypot — must stay hidden. `.visually-hidden` alone loses to
+   `.form input`, which would render it as a full-size empty field. */
+.form input[name="_honey"] { display: none; }
+
+/* Inline links inside the status message: grow the hit area with vertical
+   padding rather than a block box, so the sentence still flows. */
+.form__status a { padding-block: 0.7rem; }
 
 .form__fine { font-size: 0.8rem; color: var(--text-on-dark-muted); margin: 0; }
 

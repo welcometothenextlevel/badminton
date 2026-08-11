@@ -20,6 +20,51 @@
   window.addEventListener('scroll', updateHeader, { passive: true });
 
   /* -----------------------------------------------------------
+     Programs dropdown (desktop)
+     CSS handles hover and :focus-within. This adds click/tap
+     toggling, Escape to close and click-outside to close, and
+     keeps aria-expanded truthful.
+     ----------------------------------------------------------- */
+  var subItem   = document.querySelector('.nav__item--sub');
+  var subToggle = subItem && subItem.querySelector('.nav__toggle');
+
+  function closeSub() {
+    if (!subItem) return;
+    subItem.classList.remove('is-open');
+    subToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  if (subItem && subToggle) {
+    subToggle.addEventListener('click', function (e) {
+      e.preventDefault();
+      var open = subItem.classList.toggle('is-open');
+      subToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    // hovering is the primary desktop affordance; keep the flag in sync
+    subItem.addEventListener('mouseenter', function () {
+      subToggle.setAttribute('aria-expanded', 'true');
+    });
+    subItem.addEventListener('mouseleave', function () {
+      if (!subItem.classList.contains('is-open')) {
+        subToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!subItem.contains(e.target)) closeSub();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (subItem.classList.contains('is-open') || subItem.contains(document.activeElement)) {
+        closeSub();
+        subToggle.focus();
+      }
+    });
+  }
+
+  /* -----------------------------------------------------------
      Mobile overlay menu
      ----------------------------------------------------------- */
   var burger  = document.getElementById('burger');
@@ -173,9 +218,9 @@
      the centre. That is the fallback, not the destination — add the
      endpoint below when the form account exists.
      ----------------------------------------------------------- */
-  var FORM_ENDPOINT   = '';               // e.g. 'https://formspree.io/f/xxxxxxx'
-  var WHATSAPP_NUMBER = '61450478378';
-  var CONTACT_EMAIL   = '';               // optional mailto fallback
+  var FORM_ENDPOINT   = 'https://formsubmit.co/ajax/contact@nextdigitallevel.com';
+  var WHATSAPP_NUMBER = '61421609179';
+  var CONTACT_EMAIL   = 'contact@nextdigitallevel.com';
 
   function fieldLabel(form, field) {
     var lbl = form.querySelector('label[for="' + field.id + '"]');
@@ -234,6 +279,7 @@
 
       var firstName = (form.elements.name.value.trim().split(' ')[0]) || 'there';
       var btn = form.querySelector('button[type="submit"]');
+      var btnText = btn ? btn.textContent : '';
 
       // 1. A real endpoint is configured — POST it.
       if (FORM_ENDPOINT) {
@@ -241,22 +287,30 @@
         status.className = 'form__status';
         status.textContent = 'Sending…';
 
+        var data = new FormData(form);
+        data.append('_subject', heading);      // email subject line
+        data.append('_template', 'table');     // readable layout
+        data.append('_captcha', 'false');      // AJAX returns JSON, no captcha page
+
         fetch(FORM_ENDPOINT, {
           method: 'POST',
           headers: { 'Accept': 'application/json' },
-          body: new FormData(form)
+          body: data
         }).then(function (res) {
-          if (!res.ok) throw new Error('bad status');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json().catch(function () { return {}; });
+        }).then(function (body) {
+          if (body && body.success === 'false') throw new Error(body.message || 'rejected');
           status.className = 'form__status is-ok';
           status.textContent = 'Thanks ' + firstName + ' — ' + successText;
           form.reset();
         }).catch(function () {
           status.className = 'form__status is-error';
-          status.innerHTML = 'That didn’t send. Please call ' +
+          status.innerHTML = 'Sorry, that didn’t send. Please call ' +
             '<a href="tel:+61450478378">0450 478 378</a> or ' +
-            '<a href="' + toWhatsAppUrl(form, heading) + '" target="_blank" rel="noopener">message us on WhatsApp</a>.';
+            '<a href="' + toWhatsAppUrl(form, heading) + '" target="_blank" rel="noopener">send it on WhatsApp instead</a>.';
         }).then(function () {
-          if (btn) { btn.disabled = false; btn.textContent = 'Send my details'; }
+          if (btn) { btn.disabled = false; btn.textContent = btnText; }
         });
         return;
       }
