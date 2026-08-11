@@ -209,18 +209,24 @@
   /* -----------------------------------------------------------
      ENQUIRY DELIVERY
      ===========================================================
-     Set FORM_ENDPOINT to a form-to-email URL (Formspree, Basin,
-     Netlify Forms, or your own script) and submissions are POSTed
-     there and land in the inbox.
+     Enquiries POST to FormSubmit and land in the centre's inbox.
 
-     Until that is set, submissions do NOT silently disappear: the
-     enquiry is handed to WhatsApp pre-filled, so it still reaches
-     the centre. That is the fallback, not the destination — add the
-     endpoint below when the form account exists.
+     IMPORTANT: FormSubmit must be activated once. The first
+     submission emails a confirmation link to the destination
+     address; nothing is delivered until that link is clicked.
+
+     After activating, replace the address in FORM_ENDPOINT and in
+     each form's action with the hashed endpoint FormSubmit issues
+     (formsubmit.co/ajax/<hash>). That keeps the destination address
+     out of the public page source, away from scrapers.
+
+     If the POST fails for any reason the enquiry is not lost: the
+     error state offers the phone number and a pre-filled WhatsApp
+     message instead.
      ----------------------------------------------------------- */
-  var FORM_ENDPOINT   = 'https://formsubmit.co/ajax/contact@nextdigitallevel.com';
+  var FORM_ENDPOINT   = 'https://formsubmit.co/ajax/akhi_pai@outlook.com';
   var WHATSAPP_NUMBER = '61421609179';
-  var CONTACT_EMAIL   = 'contact@nextdigitallevel.com';
+  var CONTACT_EMAIL   = '';
 
   function fieldLabel(form, field) {
     var lbl = form.querySelector('label[for="' + field.id + '"]');
