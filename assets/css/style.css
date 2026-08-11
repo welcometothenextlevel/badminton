@@ -150,6 +150,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 .section { padding-block: var(--section-y); }
+
+/* Anchor landing: without this the browser stops at the top of the section's
+   full padding, leaving a big empty band under the sticky header. Pulling the
+   scroll target up by most of that padding lands the heading just below it. */
+.section[id] { scroll-margin-top: calc(1rem - var(--section-y)); }
 .section--light { background: var(--paper); color: var(--text); }
 .section--dark  { background: var(--ink);   color: var(--text-on-dark); }
 
@@ -654,27 +659,7 @@ body.is-locked { overflow: hidden; }
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='square'/%3E%3C/svg%3E") center / 78% no-repeat;
 }
 
-/* Brand panel — the EBC mark against the mountain it's named for.
-   Sits at the foot of the copy column, where the Why Everest blurb used to be. */
-.about__brand { margin: var(--sp-4) 0 0; }
-.about__brand img {
-  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
-  border-radius: 2px;
-}
 
-/* "Why Everest" — carries the brand story into the body of the page */
-.why {
-  margin-top: var(--sp-4);
-  padding: var(--sp-3) var(--sp-3) var(--sp-3) calc(var(--sp-3) + 4px);
-  background: var(--paper-2);
-  border-left: 3px solid var(--accent);
-  border-radius: 2px;
-}
-.why__title {
-  font-size: 0.78rem; letter-spacing: 0.2em; font-weight: 700;
-  color: var(--accent-deep); margin-bottom: 0.55rem;
-}
-.why p { color: var(--text-muted); font-size: 0.96rem; margin: 0; }
 
 .about__media { display: grid; gap: var(--sp-3); }
 .about__figure { margin: 0; }
@@ -694,13 +679,39 @@ body.is-locked { overflow: hidden; }
     align-items: start;
   }
   .about__figure img { aspect-ratio: 3 / 4; }
-  /* The blurb is narrower and right-aligned, stepping the column edge
-     the way the secondary photo used to. */
-  .why {
-    width: 78%;
-    margin-left: auto;
-    margin-right: clamp(0px, 2vw, 2.5rem);
+}
+
+
+/* -------------------------------------------------------------
+   9b. WHY EVEREST BAND — full-bleed mountain background
+   Carries the brand across the full width so the logo and the
+   blurb share the same photo, rather than sitting in two boxes.
+   ------------------------------------------------------------- */
+.everest-band {
+  position: relative; isolation: isolate;
+  padding-block: clamp(3rem, 2rem + 4vw, 6rem);
+  background: var(--navy-deep); color: var(--text-on-dark);
+  overflow: hidden;
+}
+.everest-band__img {
+  position: absolute; inset: 0; z-index: -2;
+  width: 100%; height: 100%; object-fit: cover; object-position: center 42%;
+}
+.everest-band::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(100deg, rgba(10,20,40,.82) 0%, rgba(10,20,40,.55) 45%, rgba(10,20,40,.75) 100%);
+}
+.everest-band__inner { display: grid; gap: var(--sp-4); align-items: center; }
+.everest-band__mark img { width: min(100%, 320px); height: auto; margin-inline: auto; }
+.everest-band__copy p { color: rgba(255,255,255,.86); max-width: 54ch; }
+.everest-band__copy .h2 { margin-bottom: var(--sp-3); }
+
+@media (min-width: 860px) {
+  .everest-band__inner {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(2.5rem, 1rem + 5vw, 6rem);
   }
+  .everest-band__mark img { width: min(100%, 380px); margin-inline: 0; }
 }
 
 /* -------------------------------------------------------------

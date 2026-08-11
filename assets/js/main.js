@@ -307,7 +307,7 @@
         }).catch(function () {
           status.className = 'form__status is-error';
           status.innerHTML = 'Sorry, that didn’t send. Please call ' +
-            '<a href="tel:+61450478378">0450 478 378</a> or ' +
+            '<a href="tel:+61426620274">0426 620 274</a> or ' +
             '<a href="' + toWhatsAppUrl(form, heading) + '" target="_blank" rel="noopener">send it on WhatsApp instead</a>.';
         }).then(function () {
           if (btn) { btn.disabled = false; btn.textContent = btnText; }
