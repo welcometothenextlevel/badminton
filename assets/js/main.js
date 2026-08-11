@@ -162,45 +162,132 @@
   }
 
   /* -----------------------------------------------------------
-     Register-your-interest form
-     Sample only — no backend. Validates, then confirms inline.
-     Wire the submit handler to a real endpoint before launch.
-     ----------------------------------------------------------- */
-  var form   = document.getElementById('interestForm');
-  var status = document.getElementById('formStatus');
+     ENQUIRY DELIVERY
+     ===========================================================
+     Set FORM_ENDPOINT to a form-to-email URL (Formspree, Basin,
+     Netlify Forms, or your own script) and submissions are POSTed
+     there and land in the inbox.
 
-  if (form && status) {
+     Until that is set, submissions do NOT silently disappear: the
+     enquiry is handed to WhatsApp pre-filled, so it still reaches
+     the centre. That is the fallback, not the destination — add the
+     endpoint below when the form account exists.
+     ----------------------------------------------------------- */
+  var FORM_ENDPOINT   = '';               // e.g. 'https://formspree.io/f/xxxxxxx'
+  var WHATSAPP_NUMBER = '61450478378';
+  var CONTACT_EMAIL   = '';               // optional mailto fallback
+
+  function fieldLabel(form, field) {
+    var lbl = form.querySelector('label[for="' + field.id + '"]');
+    return lbl ? lbl.textContent.replace('*', '').trim() : (field.name || field.id);
+  }
+
+  function collect(form) {
+    var out = [];
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!el.name || el.type === 'submit' || !el.value.trim()) return;
+      out.push({ key: el.name, label: fieldLabel(form, el), value: el.value.trim() });
+    });
+    return out;
+  }
+
+  function toWhatsAppUrl(form, heading) {
+    var lines = [heading, ''];
+    collect(form).forEach(function (f) { lines.push(f.label + ': ' + f.value); });
+    return 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
+  }
+
+  function validate(form, status) {
+    var name  = form.elements.name;
+    var email = form.elements.email;
+    var problems = [];
+
+    [name, email].forEach(function (f) { if (f) f.removeAttribute('aria-invalid'); });
+
+    if (name && !name.value.trim()) {
+      problems.push('your name');
+      name.setAttribute('aria-invalid', 'true');
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())) {
+      problems.push('a valid email address');
+      email.setAttribute('aria-invalid', 'true');
+    }
+
+    if (problems.length) {
+      status.className = 'form__status is-error';
+      status.textContent = 'Please add ' + problems.join(' and ') + '.';
+      var first = form.querySelector('[aria-invalid="true"]');
+      if (first) first.focus();
+      return false;
+    }
+    return true;
+  }
+
+  function wireForm(formId, statusId, heading, successText) {
+    var form   = document.getElementById(formId);
+    var status = document.getElementById(statusId);
+    if (!form || !status) return;
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (!validate(form, status)) return;
 
-      var name  = form.elements.name;
-      var email = form.elements.email;
-      var problems = [];
+      var firstName = (form.elements.name.value.trim().split(' ')[0]) || 'there';
+      var btn = form.querySelector('button[type="submit"]');
 
-      [name, email].forEach(function (field) { field.removeAttribute('aria-invalid'); });
+      // 1. A real endpoint is configured — POST it.
+      if (FORM_ENDPOINT) {
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+        status.className = 'form__status';
+        status.textContent = 'Sending…';
 
-      if (!name.value.trim()) {
-        problems.push('your name');
-        name.setAttribute('aria-invalid', 'true');
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())) {
-        problems.push('a valid email address');
-        email.setAttribute('aria-invalid', 'true');
-      }
-
-      if (problems.length) {
-        status.className = 'form__status is-error';
-        status.textContent = 'Please add ' + problems.join(' and ') + '.';
-        (problems.length === 2 ? name : document.querySelector('[aria-invalid="true"]')).focus();
+        fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(form)
+        }).then(function (res) {
+          if (!res.ok) throw new Error('bad status');
+          status.className = 'form__status is-ok';
+          status.textContent = 'Thanks ' + firstName + ' — ' + successText;
+          form.reset();
+        }).catch(function () {
+          status.className = 'form__status is-error';
+          status.innerHTML = 'That didn’t send. Please call ' +
+            '<a href="tel:+61450478378">0450 478 378</a> or ' +
+            '<a href="' + toWhatsAppUrl(form, heading) + '" target="_blank" rel="noopener">message us on WhatsApp</a>.';
+        }).then(function () {
+          if (btn) { btn.disabled = false; btn.textContent = 'Send my details'; }
+        });
         return;
       }
 
+      // 2. No endpoint yet — hand the enquiry to WhatsApp so it still arrives.
+      var waUrl = toWhatsAppUrl(form, heading);
+      var win = window.open(waUrl, '_blank', 'noopener');
+
       status.className = 'form__status is-ok';
-      status.textContent = 'Thanks ' + name.value.trim().split(' ')[0] +
-        ' — you’re on the list. We’ll be in touch with opening dates and founding member offers.';
-      form.reset();
+      if (win) {
+        status.innerHTML = 'Thanks ' + firstName + ' — your details are ready to send in WhatsApp. ' +
+          'Just hit send there and we’ll come back to you.';
+      } else {
+        status.innerHTML = 'Almost there — ' +
+          '<a href="' + waUrl + '" target="_blank" rel="noopener">tap here to send your enquiry</a>' +
+          (CONTACT_EMAIL ? ' or email <a href="mailto:' + CONTACT_EMAIL + '">' + CONTACT_EMAIL + '</a>' : '') + '.';
+      }
     });
   }
+
+  wireForm(
+    'interestForm', 'formStatus',
+    'New enquiry from the Everest Badminton Centre website',
+    'you’re on the list. We’ll be in touch with opening dates and founding member offers.'
+  );
+
+  wireForm(
+    'bookingForm', 'bookingStatus',
+    'New court booking request from the Everest Badminton Centre website',
+    'we’ve got your request and will come back to you as soon as the booking sheet opens.'
+  );
 
   /* -----------------------------------------------------------
      Footer year

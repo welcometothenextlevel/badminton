@@ -951,9 +951,13 @@ body.is-locked { overflow: hidden; }
   font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase;
   text-decoration: none; border-radius: 2px;
 }
-/* Keep the bar clear of the footer content on small screens */
+/* Keep the sticky bar and the floating WhatsApp button clear of footer
+   content — the float is fixed bottom-right, where the credit line sits. */
 @media (max-width: 767px) { .site-footer { padding-bottom: 6.5rem; } }
-@media (min-width: 768px) { .sticky-bar { display: none; } }
+@media (min-width: 768px) {
+  .sticky-bar { display: none; }
+  .site-footer { padding-bottom: 6.5rem; }
+}
 
 /* -------------------------------------------------------------
    16. SCROLL REVEAL — fade and rise
@@ -986,3 +990,202 @@ body.is-locked { overflow: hidden; }
   .reveal { opacity: 1; transform: none; }
   .hero__media img { animation: none; transform: none; }
 }
+
+/* =============================================================
+   18. INNER PAGES (programs, memberships, booking)
+   Reuses the tokens and rhythm of the homepage.
+   ============================================================= */
+
+/* Compact hero for inner pages — not the full-bleed homepage hero */
+.page-hero {
+  position: relative; isolation: isolate;
+  padding-block: calc(var(--header-h) + var(--sp-6)) var(--sp-6);
+  background: var(--ink); color: #fff;
+  overflow: hidden;
+}
+.page-hero__media { position: absolute; inset: 0; z-index: -2; }
+.page-hero__media img { width: 100%; height: 100%; object-fit: cover; }
+.page-hero::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(to top,   rgba(12,20,38,.94) 0%, rgba(12,20,38,.70) 55%, rgba(12,20,38,.55) 100%),
+    linear-gradient(to right, rgba(12,20,38,.92) 0%, rgba(12,20,38,.45) 70%, rgba(12,20,38,.2) 100%);
+}
+.page-hero__title { font-size: clamp(2.1rem, 1.3rem + 3.4vw, 4.2rem); margin-bottom: var(--sp-3); }
+.page-hero__lede {
+  font-size: var(--fs-lede); color: rgba(255,255,255,.85);
+  max-width: 52ch; margin-bottom: var(--sp-4);
+}
+.page-hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+/* Breadcrumb */
+.crumbs { margin-bottom: var(--sp-3); font-size: 0.82rem; }
+.crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.crumbs a {
+  color: var(--accent); text-decoration: none;
+  display: inline-flex; align-items: center; min-height: 44px;  /* tap target */
+}
+.crumbs a:hover { text-decoration: underline; }
+.crumbs [aria-current] { display: inline-flex; align-items: center; min-height: 44px; }
+.crumbs li + li::before { content: "/"; margin-right: 0.5rem; opacity: .45; }
+.crumbs [aria-current] { color: rgba(255,255,255,.7); }
+
+/* Two-column body: prose left, aside right */
+.page-grid { display: grid; gap: var(--sp-5); }
+@media (min-width: 900px) {
+  .page-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(3rem, 1rem + 5vw, 6rem);
+    align-items: start;
+  }
+  .page-grid__aside { position: sticky; top: calc(var(--header-h) + 2.5rem); }
+}
+
+.prose h2 { font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem); margin: var(--sp-5) 0 var(--sp-2); }
+.prose h2:first-child { margin-top: 0; }
+.prose h3 { font-size: var(--fs-h3); margin: var(--sp-4) 0 0.5rem; }
+.prose p { color: var(--text-muted); max-width: 60ch; }
+
+/* Numbered steps */
+.steps { display: grid; gap: 0; margin-top: var(--sp-3); }
+.steps li {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-3);
+  padding: var(--sp-3) 0; border-top: 1px solid var(--rule);
+}
+.steps li:last-child { border-bottom: 1px solid var(--rule); }
+.steps__n {
+  font-family: "Archivo", sans-serif; font-weight: 700;
+  font-size: 0.8rem; letter-spacing: 0.1em; color: var(--accent-deep); padding-top: 0.2rem;
+}
+.steps h3 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+.steps p { margin: 0; font-size: 0.94rem; }
+
+/* Fact card in the aside */
+.factcard {
+  background: var(--paper-2); border-left: 3px solid var(--accent);
+  border-radius: 2px; padding: var(--sp-3);
+}
+.factcard h2 { font-size: 0.78rem; letter-spacing: 0.2em; color: var(--accent-deep); margin: 0 0 var(--sp-2); }
+.factcard dl { display: grid; gap: 0.75rem; margin: 0; }
+.factcard dt {
+  font-family: "Archivo", sans-serif; font-weight: 700;
+  font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted);
+}
+.factcard dd { margin: 0.15rem 0 0; font-size: 0.95rem; }
+.factcard dd a {
+  color: inherit;
+  display: inline-flex; align-items: center; min-height: 44px;  /* tap target */
+}
+
+/* Cross links to sibling program pages */
+.crosslinks { display: grid; gap: 1px; background: var(--rule); border-block: 1px solid var(--rule); }
+.crosslink {
+  background: var(--paper); padding: var(--sp-3) var(--sp-2) var(--sp-3) 0;
+  text-decoration: none; display: block;
+  transition: background-color .25s var(--ease);
+}
+.crosslink h3 { font-size: 1.02rem; margin-bottom: 0.3rem; }
+.crosslink p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+.crosslink:hover { background: var(--paper-2); }
+@media (min-width: 700px) {
+  .crosslinks { grid-template-columns: repeat(2, 1fr); }
+  .crosslink { padding-inline: var(--sp-3); }
+  .crosslink:nth-child(2n+1) { padding-left: 0; }
+}
+@media (min-width: 1024px) { .crosslinks { grid-template-columns: repeat(4, 1fr); } }
+
+/* Closing CTA band */
+.cta-band { background: var(--ink); color: var(--text-on-dark); padding-block: var(--section-y); }
+.cta-band .h2 { color: #fff; }
+.cta-band p { color: var(--text-on-dark-muted); max-width: 46ch; }
+.cta-band__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: var(--sp-4); }
+@media (min-width: 900px) {
+  .cta-band__inner {
+    display: grid; grid-template-columns: minmax(0,1fr) auto;
+    gap: var(--sp-5); align-items: end;
+  }
+  .cta-band__actions { margin-top: 0; }
+}
+
+/* Booking embed slot */
+.booking-slot {
+  border: 1px dashed var(--rule); border-radius: 2px;
+  background: var(--paper-2); padding: var(--sp-5) var(--sp-3);
+  text-align: center;
+}
+.booking-slot h2 { font-size: var(--fs-h3); margin-bottom: 0.6rem; }
+.booking-slot p { color: var(--text-muted); max-width: 48ch; margin-inline: auto; }
+
+/* -------------------------------------------------------------
+   19. WHATSAPP BUTTON
+   ------------------------------------------------------------- */
+.wa-float {
+  position: fixed; z-index: 85;
+  right: clamp(0.9rem, 2vw, 1.75rem);
+  bottom: clamp(0.9rem, 2vw, 1.75rem);
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  min-height: 52px; padding: 0.7rem 1.15rem;
+  background: #25D366; color: #06251A;
+  font-family: "Archivo", sans-serif; font-weight: 700;
+  font-size: 0.85rem; letter-spacing: 0.04em;
+  text-decoration: none; border-radius: 100px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  transition: transform .25s var(--ease), background-color .25s var(--ease);
+}
+.wa-float:hover { background: #1FBE5A; transform: translateY(-2px); }
+.wa-float svg { width: 22px; height: 22px; flex: none; fill: currentColor; }
+.wa-float__label { display: none; }
+@media (min-width: 560px) { .wa-float__label { display: inline; } }
+/* clear the mobile sticky bar */
+@media (max-width: 767px) { .wa-float { bottom: 5.25rem; } }
+
+/* -------------------------------------------------------------
+   20. FORM ON A LIGHT SECTION (booking page)
+   ------------------------------------------------------------- */
+.form--light { margin-top: var(--sp-4); }
+.form--light label { color: var(--text-muted); }
+.form--light label span { color: var(--accent-deep); }
+.form--light input,
+.form--light select,
+.form--light textarea {
+  background: var(--paper); border-color: var(--rule); color: var(--text);
+}
+.form--light input::placeholder,
+.form--light textarea::placeholder { color: #8A93A5; }
+.form--light input:hover,
+.form--light select:hover,
+.form--light textarea:hover { border-color: var(--text-muted); }
+.form--light input:focus,
+.form--light select:focus,
+.form--light textarea:focus {
+  border-color: var(--accent-deep); background: var(--paper);
+  box-shadow: 0 0 0 3px rgba(201,160,99,.22);
+}
+.form--light select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%235A6478' stroke-width='1.6'/%3E%3C/svg%3E");
+  /* the background-colour rule above is a shorthand, so these must be restated
+     or the chevron tiles across the whole control */
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px;
+}
+.form--light .form__fine { color: var(--text-muted); }
+.form--light .form__status.is-ok { color: var(--accent-deep); }
+.form--light .form__status.is-error { color: #C2410C; }
+
+/* Program titles on the homepage now link through to their own page */
+.prog__link {
+  color: inherit; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  min-height: 44px;              /* tap target */
+  transition: color .2s var(--ease);
+}
+.prog__link::after {
+  content: ""; width: 14px; height: 10px; flex: none;
+  background: currentColor; opacity: .55;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 14'%3E%3Cpath d='M1 7h17M12 1l6 6-6 6' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 14'%3E%3Cpath d='M1 7h17M12 1l6 6-6 6' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform .25s var(--ease);
+}
+.prog__link:hover { color: var(--accent); }
+.prog__link:hover::after { transform: translateX(4px); }
