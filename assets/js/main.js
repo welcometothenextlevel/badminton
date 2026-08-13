@@ -207,24 +207,20 @@
   }
 
   /* -----------------------------------------------------------
-     ENQUIRY DELIVERY
+     ENQUIRY DELIVERY — Web3Forms
      ===========================================================
-     Enquiries POST to FormSubmit and land in the centre's inbox.
+     Enquiries POST to Web3Forms, which emails them to the address
+     registered against the access key.
 
-     IMPORTANT: FormSubmit must be activated once. The first
-     submission emails a confirmation link to the destination
-     address; nothing is delivered until that link is clicked.
-
-     After activating, replace the address in FORM_ENDPOINT and in
-     each form's action with the hashed endpoint FormSubmit issues
-     (formsubmit.co/ajax/<hash>). That keeps the destination address
-     out of the public page source, away from scrapers.
+     The access key lives in each form's own hidden input, not here,
+     so there is exactly one place per form to change it. FormData
+     picks it up along with everything else.
 
      If the POST fails for any reason the enquiry is not lost: the
      error state offers the phone number and a pre-filled WhatsApp
      message instead.
      ----------------------------------------------------------- */
-  var FORM_ENDPOINT   = 'https://formsubmit.co/ajax/akhi_pai@outlook.com';
+  var FORM_ENDPOINT   = 'https://api.web3forms.com/submit';
   var WHATSAPP_NUMBER = '61421609179';
   var CONTACT_EMAIL   = '';
 
@@ -233,10 +229,15 @@
     return lbl ? lbl.textContent.replace('*', '').trim() : (field.name || field.id);
   }
 
+  /* Visible, user-entered fields only. Hidden plumbing (access_key,
+     subject, from_name) and the honeypot must never end up in the
+     WhatsApp fallback message. */
   function collect(form) {
     var out = [];
     Array.prototype.forEach.call(form.elements, function (el) {
-      if (!el.name || el.type === 'submit' || !el.value.trim()) return;
+      if (!el.name || el.type === 'submit' || el.type === 'hidden' ||
+          el.type === 'checkbox' || el.name.charAt(0) === '_') return;
+      if (!el.value.trim()) return;
       out.push({ key: el.name, label: fieldLabel(form, el), value: el.value.trim() });
     });
     return out;
@@ -293,20 +294,22 @@
         status.className = 'form__status';
         status.textContent = 'Sending…';
 
-        var data = new FormData(form);
-        data.append('_subject', heading);      // email subject line
-        data.append('_template', 'table');     // readable layout
-        data.append('_captcha', 'false');      // AJAX returns JSON, no captcha page
-
+        /* access_key, subject and from_name are hidden inputs on the form,
+           so FormData already carries them. Nothing to append here. */
         fetch(FORM_ENDPOINT, {
           method: 'POST',
           headers: { 'Accept': 'application/json' },
-          body: data
+          body: new FormData(form)
         }).then(function (res) {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json().catch(function () { return {}; });
-        }).then(function (body) {
-          if (body && body.success === 'false') throw new Error(body.message || 'rejected');
+          return res.json().catch(function () { return {}; })
+            .then(function (body) {
+              // Web3Forms answers with { success: true|false, message: "..." }
+              if (!res.ok || !body || body.success !== true) {
+                throw new Error((body && body.message) || ('HTTP ' + res.status));
+              }
+              return body;
+            });
+        }).then(function () {
           status.className = 'form__status is-ok';
           status.textContent = 'Thanks ' + firstName + ' — ' + successText;
           form.reset();

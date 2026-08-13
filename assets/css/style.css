@@ -844,6 +844,98 @@ body.is-locked { overflow: hidden; }
 }
 
 /* -------------------------------------------------------------
+   13. PRICING TIERS (restored: rates are final)
+   ------------------------------------------------------------- */
+.price-note {
+  font-size: 0.88rem; color: var(--text-muted);
+  padding: 0.9rem 1.1rem; background: var(--paper-2);
+  border-left: 3px solid var(--accent);
+  margin-bottom: var(--sp-4); max-width: 70ch;
+}
+
+.tiers { display: grid; gap: var(--sp-3); }
+
+.tier {
+  position: relative;
+  display: flex; flex-direction: column;
+  padding: var(--sp-4);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  transition: border-color .3s var(--ease), transform .3s var(--ease);
+}
+.tier:hover { border-color: var(--text); }
+
+.tier--feature {
+  background: var(--ink); color: var(--text-on-dark);
+  border-color: var(--ink);
+}
+.tier--feature:hover { border-color: var(--accent); }
+
+.tier__flag {
+  position: absolute; top: 0; right: var(--sp-4);
+  transform: translateY(-50%);
+  background: var(--accent); color: var(--accent-ink);
+  font-family: "Archivo", sans-serif; font-weight: 700;
+  font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 0.35rem 0.7rem; border-radius: 2px; margin: 0;
+}
+
+.tier__head { margin-bottom: var(--sp-3); }
+.tier__name { font-size: var(--fs-h3); margin-bottom: 0.4rem; }
+.tier--feature .tier__name { color: #fff; }
+.tier__when { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+.tier--feature .tier__when { color: var(--text-on-dark-muted); }
+
+.tier__price {
+  font-family: "Archivo", sans-serif; font-weight: 800;
+  font-size: clamp(2.6rem, 1.8rem + 2.4vw, 3.4rem);
+  line-height: 1; letter-spacing: -0.05em;
+  margin: 0 0 var(--sp-3); padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+.tier--feature .tier__price { color: var(--accent); border-bottom-color: var(--ink-3); }
+.tier__cur  { font-size: 0.45em; vertical-align: 0.62em; margin-right: 0.08em; }
+.tier__unit {
+  font-size: 0.26em; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--text-muted); margin-left: 0.3em;
+}
+.tier--feature .tier__unit { color: var(--text-on-dark-muted); }
+
+.tier__list { display: grid; gap: 0.6rem; margin-bottom: var(--sp-4); flex: 1 1 auto; }
+.tier__list li {
+  position: relative; padding-left: 1.4rem;
+  font-size: 0.92rem; line-height: 1.5; color: var(--text-muted);
+}
+.tier--feature .tier__list li { color: var(--text-on-dark-muted); }
+.tier__list li::before {
+  content: ""; position: absolute; left: 0; top: 0.62em;
+  width: 8px; height: 1px; background: var(--accent-deep);
+}
+.tier--feature .tier__list li::before { background: var(--accent); }
+
+@media (min-width: 720px) {
+  .tiers { grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); align-items: stretch; }
+  .tier { padding: var(--sp-4) var(--sp-3); }
+  .tier--feature { transform: translateY(-14px); padding-bottom: calc(var(--sp-4) + 14px); }
+}
+@media (min-width: 1024px) {
+  .tier { padding: var(--sp-5) var(--sp-4); }
+  .tier--feature { padding-bottom: calc(var(--sp-5) + 14px); }
+}
+
+/* Two-tier comparison inside a prose column (memberships page) */
+.tiers--pair { margin: var(--sp-3) 0 var(--sp-4); }
+@media (min-width: 620px) {
+  .tiers--pair { grid-template-columns: repeat(2, 1fr); gap: var(--sp-2); }
+  /* the founding tier is first here, so lift that one instead of the middle */
+  .tiers--pair .tier--feature { transform: translateY(-10px); padding-bottom: calc(var(--sp-4) + 10px); }
+}
+/* a tier with no price still needs its list to line up with the priced one */
+.tier__list--offset { margin-top: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--rule); }
+
+/* -------------------------------------------------------------
    13. REGISTER YOUR INTEREST (form)
    ------------------------------------------------------------- */
 .book__grid { display: grid; gap: var(--sp-5); }
@@ -894,7 +986,7 @@ body.is-locked { overflow: hidden; }
 
 /* Spam honeypot — must stay hidden. `.visually-hidden` alone loses to
    `.form input`, which would render it as a full-size empty field. */
-.form input[name="_honey"] { display: none; }
+.form input[name="botcheck"] { display: none; }
 
 /* Inline links inside the status message: grow the hit area with vertical
    padding rather than a block box, so the sentence still flows. */

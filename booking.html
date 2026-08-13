@@ -170,14 +170,16 @@
       <p>Leave your details and roughly when suits, and we'll come back to you the moment the booking sheet
         opens. This goes straight to the centre.</p>
 
-      <!-- Posts to FormSubmit. JS intercepts and uses the /ajax/ endpoint so the
-           visitor stays on the page; this action is the no-JS fallback. -->
+      <!-- Posts to Web3Forms. JS intercepts and submits with fetch so the visitor
+           stays on the page; the action is the no-JS fallback.
+           THE ACCESS KEY BELOW IS THE ONLY PLACE IT IS SET ON THIS PAGE. -->
       <form class="form form--light reveal" id="bookingForm" novalidate
-            action="https://formsubmit.co/akhi_pai@outlook.com" method="POST">
-        <input type="hidden" name="_subject" value="New court enquiry from the Everest Badminton Centre website">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="visually-hidden">
+            action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="PASTE_YOUR_WEB3FORMS_ACCESS_KEY_HERE">
+        <input type="hidden" name="subject" value="New court enquiry from Everest Badminton Centre website">
+        <input type="hidden" name="from_name" value="Everest Badminton Centre website">
+        <!-- spam honeypot: real people never tick this -->
+        <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="form__row">
           <label for="b-name">Full name <span aria-hidden="true">*</span></label>
           <input type="text" id="b-name" name="name" autocomplete="name" required>
