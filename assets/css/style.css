@@ -984,9 +984,6 @@ body.is-locked { overflow: hidden; }
   padding-right: 2.75rem;
 }
 
-/* Spam honeypot — must stay hidden. `.visually-hidden` alone loses to
-   `.form input`, which would render it as a full-size empty field. */
-.form input[name="botcheck"] { display: none; }
 
 /* Inline links inside the status message: grow the hit area with vertical
    padding rather than a block box, so the sentence still flows. */

@@ -640,17 +640,7 @@
              alt="A player leaping into a jump smash during a rally">
       </figure>
     </div>
-
-    <!-- Posts to Web3Forms. JS intercepts and submits with fetch so the visitor
-         stays on the page; the action is the no-JS fallback.
-         THE ACCESS KEY BELOW IS THE ONLY PLACE IT IS SET ON THIS PAGE. -->
-    <form class="form reveal" id="interestForm" novalidate
-          action="https://api.web3forms.com/submit" method="POST">
-      <input type="hidden" name="access_key" value="PASTE_YOUR_WEB3FORMS_ACCESS_KEY_HERE">
-      <input type="hidden" name="subject" value="New enquiry from Everest Badminton Centre website">
-      <input type="hidden" name="from_name" value="Everest Badminton Centre website">
-      <!-- spam honeypot: real people never tick this -->
-      <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <form class="form reveal" id="interestForm" novalidate>
       <div class="form__row">
         <label for="f-name">Full name <span aria-hidden="true">*</span></label>
         <input type="text" id="f-name" name="name" autocomplete="name" required>
@@ -687,7 +677,7 @@
       </div>
 
       <button class="btn btn--accent btn--full" type="submit">Send my details</button>
-      <p class="form__fine">We'll only use this to contact you about the centre opening. No lists, no spam.</p>
+      <p class="form__fine">This opens WhatsApp with your details ready to send. No lists, no spam.</p>
 
       <p class="form__status" id="formStatus" role="status" aria-live="polite"></p>
     </form>

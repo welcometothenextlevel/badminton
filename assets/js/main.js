@@ -207,31 +207,26 @@
   }
 
   /* -----------------------------------------------------------
-     ENQUIRY DELIVERY — Web3Forms
+     ENQUIRY DELIVERY — WhatsApp
      ===========================================================
-     Enquiries POST to Web3Forms, which emails them to the address
-     registered against the access key.
+     Every enquiry goes to WhatsApp. On submit the form is validated,
+     the answers are formatted into a readable message and WhatsApp
+     opens with it pre-filled, addressed to WHATSAPP_NUMBER. The
+     visitor presses send in WhatsApp.
 
-     The access key lives in each form's own hidden input, not here,
-     so there is exactly one place per form to change it. FormData
-     picks it up along with everything else.
-
-     If the POST fails for any reason the enquiry is not lost: the
-     error state offers the phone number and a pre-filled WhatsApp
-     message instead.
+     No email service, no server, nothing to keep alive. To change
+     where enquiries land, change WHATSAPP_NUMBER below and the
+     floating button's href in each page.
      ----------------------------------------------------------- */
-  var FORM_ENDPOINT   = 'https://api.web3forms.com/submit';
   var WHATSAPP_NUMBER = '61421609179';
-  var CONTACT_EMAIL   = '';
 
   function fieldLabel(form, field) {
     var lbl = form.querySelector('label[for="' + field.id + '"]');
     return lbl ? lbl.textContent.replace('*', '').trim() : (field.name || field.id);
   }
 
-  /* Visible, user-entered fields only. Hidden plumbing (access_key,
-     subject, from_name) and the honeypot must never end up in the
-     WhatsApp fallback message. */
+  /* Visible, user-entered fields only, so the WhatsApp message reads
+     like a person wrote it rather than a form dump. */
   function collect(form) {
     var out = [];
     Array.prototype.forEach.call(form.elements, function (el) {
@@ -285,57 +280,20 @@
       if (!validate(form, status)) return;
 
       var firstName = (form.elements.name.value.trim().split(' ')[0]) || 'there';
-      var btn = form.querySelector('button[type="submit"]');
-      var btnText = btn ? btn.textContent : '';
-
-      // 1. A real endpoint is configured — POST it.
-      if (FORM_ENDPOINT) {
-        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
-        status.className = 'form__status';
-        status.textContent = 'Sending…';
-
-        /* access_key, subject and from_name are hidden inputs on the form,
-           so FormData already carries them. Nothing to append here. */
-        fetch(FORM_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Accept': 'application/json' },
-          body: new FormData(form)
-        }).then(function (res) {
-          return res.json().catch(function () { return {}; })
-            .then(function (body) {
-              // Web3Forms answers with { success: true|false, message: "..." }
-              if (!res.ok || !body || body.success !== true) {
-                throw new Error((body && body.message) || ('HTTP ' + res.status));
-              }
-              return body;
-            });
-        }).then(function () {
-          status.className = 'form__status is-ok';
-          status.textContent = 'Thanks ' + firstName + ' — ' + successText;
-          form.reset();
-        }).catch(function () {
-          status.className = 'form__status is-error';
-          status.innerHTML = 'Sorry, that didn’t send. Please call ' +
-            '<a href="tel:+61426620274">0426 620 274</a> or ' +
-            '<a href="' + toWhatsAppUrl(form, heading) + '" target="_blank" rel="noopener">send it on WhatsApp instead</a>.';
-        }).then(function () {
-          if (btn) { btn.disabled = false; btn.textContent = btnText; }
-        });
-        return;
-      }
-
-      // 2. No endpoint yet — hand the enquiry to WhatsApp so it still arrives.
       var waUrl = toWhatsAppUrl(form, heading);
+
+      // Opening in the same tick as the click keeps popup blockers happy.
       var win = window.open(waUrl, '_blank', 'noopener');
 
       status.className = 'form__status is-ok';
       if (win) {
-        status.innerHTML = 'Thanks ' + firstName + ' — your details are ready to send in WhatsApp. ' +
-          'Just hit send there and we’ll come back to you.';
+        status.innerHTML = 'Thanks ' + firstName + ' — your details are in WhatsApp ready to go. ' +
+          'Press send there and ' + successText;
       } else {
-        status.innerHTML = 'Almost there — ' +
-          '<a href="' + waUrl + '" target="_blank" rel="noopener">tap here to send your enquiry</a>' +
-          (CONTACT_EMAIL ? ' or email <a href="mailto:' + CONTACT_EMAIL + '">' + CONTACT_EMAIL + '</a>' : '') + '.';
+        // popup blocked: give them the link to tap themselves
+        status.innerHTML = 'Almost there ' + firstName + ' — ' +
+          '<a href="' + waUrl + '" target="_blank" rel="noopener">tap here to send your enquiry on WhatsApp</a>, ' +
+          'or call <a href="tel:+61426620274">0426 620 274</a>.';
       }
     });
   }
@@ -343,13 +301,13 @@
   wireForm(
     'interestForm', 'formStatus',
     'New enquiry from the Everest Badminton Centre website',
-    'you’re on the list. We’ll be in touch with opening dates and founding member offers.'
+    'you’re on the list for opening dates and founding member offers.'
   );
 
   wireForm(
     'bookingForm', 'bookingStatus',
     'New court booking request from the Everest Badminton Centre website',
-    'we’ve got your request and will come back to you as soon as the booking sheet opens.'
+    'we’ll come back to you as soon as the booking sheet opens.'
   );
 
   /* -----------------------------------------------------------
